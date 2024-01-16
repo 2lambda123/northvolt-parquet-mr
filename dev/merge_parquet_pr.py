@@ -50,13 +50,18 @@ def lines_from_cmd(cmd):
 
 # Remote name which points to the GitHub site
 PR_REMOTE_NAME = os.environ.get("PR_REMOTE_NAME")
-available_remotes = lines_from_cmd("git remote")
+available_remotes = lines_from_cmd('git remote')
+import logging
+import sys
 if PR_REMOTE_NAME is not None:
     if PR_REMOTE_NAME not in available_remotes:
         print "ERROR: git remote '%s' is not defined." % PR_REMOTE_NAME
         sys.exit(-1)
 else:
-    remote_candidates = ["github-apache", "apache-github"]
+    if PR_REMOTE_NAME is not None:
+        remote_candidates = [PR_REMOTE_NAME, "github-apache", "apache-github"]
+    else:
+        remote_candidates = ["github-apache", "apache-github"]
     # Get first available remote from the list of candidates
     PR_REMOTE_NAME = next((remote for remote in available_remotes if remote in remote_candidates), None)
 
@@ -99,7 +104,7 @@ def run_cmd(cmd):
             return subprocess.check_output(cmd.split(" "))
     except subprocess.CalledProcessError as e:
         # this avoids hiding the stdout / stderr of failed processes
-        print 'Command failed: %s' % cmd
+        logging.error('Command failed: %s' % cmd)
         print 'With output:'
         print '--------------'
         print e.output
